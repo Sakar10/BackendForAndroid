@@ -4,7 +4,23 @@ const jwt = require("jsonwebtoken");
 const Register = require("../models/register");
 // const Registers = require("../models/forums");
 const router = express.Router();
-router.post("/register_user", (req, res, next) => {
+var fs = require('fs');
+var multer = require('multer');
+var path = require('path')
+
+
+var storage = multer.diskStorage({
+    destination: function (req, file, cb) {
+      cb(null, 'uploads/image')
+    },
+    filename: function (req, file, cb) {
+      cb(null, Date.now() + path.extname(file.originalname)) //Appending extension
+    }
+  })
+  
+  var upload = multer({ storage: storage });
+router.post("/register_user",upload.single("profilePicture"), (req, res, next) => {
+    console.log(req.file);
     let password = req.body.password;
     bcrypt.hash(password, 10, function (err, hash) {
         if (err) {
@@ -16,7 +32,8 @@ router.post("/register_user", (req, res, next) => {
             email: req.body.email,
             password: hash,
             address: req.body.address,
-            phone: req.body.phone
+            phone: req.body.phone,
+            image: req.file.filename      
         })
             .then(register => {
                 let token = jwt.sign({ _id: register._id }, "sakarSecret");
@@ -25,6 +42,34 @@ router.post("/register_user", (req, res, next) => {
             .catch(next);
     });
 });
+
+router.post('/me', (req,res,next) => {
+    const id = req.body.userId;
+    console.log(id);
+    Register.find({_id:id})
+    .exec()
+    .then(doc => {
+        if(doc) {
+            console.log(doc);
+            result={};
+            result.firstname=doc[0].firstname;
+            result.lastname=doc[0].lastname;
+            result.email=doc[0].email;
+            result.image=doc[0].image;
+            result.phone=doc[0].phone;
+            result.address=doc[0].address;
+         res.status(200).json(result);
+        }else{
+            res.status(404).json({
+                message: 'No users found'
+            });
+        }
+    }).catch(err => {
+        console.log(err);
+        res.status(500).json({error:err});
+    });
+  });
+
 // add forum useless
 // router.post("/register_forum", (req, res, next) => {
 //         Registers.create({

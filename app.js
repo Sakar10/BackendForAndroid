@@ -18,6 +18,7 @@ mongoose.connect('mongodb+srv://coffeetalk:sakar123@cluster0-kjjnm.mongodb.net/c
     useUnifiedTopology:true
 })
 
+app.use('/uploads',express.static(__dirname + '/uploads/image'));
 app.use(bodyParser.urlencoded({extended: true}));
 app.use(bodyParser.json());
 

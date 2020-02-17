@@ -24,7 +24,9 @@ const Register= new mongoose.Schema(
     address:{
         type:String,
         required: true
-    }
+    },
+    image:String
+
 });
 
 // module.exports=mongoose.model('register',Register);
